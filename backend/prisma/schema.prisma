@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int              @id @default(autoincrement())
+  email      String           @unique
+  name       String?
+  password   String
+  role       String
+  classRooms Classroom[]
+  teacher    TeacherStudent[] @relation("teacher")
+  student    TeacherStudent[] @relation("student")
+}
+
+model Classroom {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  teacher           User                @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  teacherId         Int
+  classRoomSchedule ClassroomSchedule[]
+  classRoomTimetable ClassroomTimetable[]
+}
+
+model ClassroomSchedule {
+  id          Int       @id @default(autoincrement())
+  startTime   DateTime  @db.Time()
+  endTime     DateTime  @db.Time()
+  day         String
+  classRoom   Classroom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  classRoomId Int
+}
+
+model TeacherStudent {
+  id        Int  @id @default(autoincrement())
+  teacher   User @relation(name: "teacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  student   User @relation(name: "student", fields: [studentId], references: [id], onDelete: Cascade)
+  teacherId Int
+  studentId Int
+}
+
+model ClassroomTimetable {
+  id          Int       @id @default(autoincrement())
+  subject String
+  startTime   DateTime  @db.Time()
+  endTime     DateTime  @db.Time()
+  day         String
+  classRoom   Classroom @relation(fields: [classRoomId], references: [id], onDelete: Cascade)
+  classRoomId Int
+}
